@@ -1,0 +1,216 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Verb-Karteikarten</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one centered study column — group chips, mode switch, one big card, controls underneath */
+:root{
+  --bg:#F3F4F8; --surface:#FFFFFF; --fg:#1B1D2A; --muted:#61657A; --line:#DADCE6; --ok:#1E8E3E; --bad:#C62828;
+  --mix:#000; --mixamt:0%;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12131B; --surface:#1C1E2A; --fg:#ECEDF3; --muted:#A3A7BA; --line:#2E3142; --ok:#5CCB7A; --bad:#F07171;
+  --mix:#fff; --mixamt:45%; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12131B; --surface:#1C1E2A; --fg:#ECEDF3; --muted:#A3A7BA; --line:#2E3142; --ok:#5CCB7A; --bad:#F07171;
+  --mix:#fff; --mixamt:45%; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px}
+.wrap{max-width:760px;margin:0 auto;display:grid;gap:20px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,4vw,2.3rem);margin:0;line-height:1.1;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0}
+.c{color:color-mix(in srgb,var(--g) calc(100% - var(--mixamt)),var(--mix))}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:.85rem;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer;
+  border:1.5px solid color-mix(in srgb,var(--g) 50%,transparent);background:transparent;color:inherit}
+.chip span{color:color-mix(in srgb,var(--g) calc(100% - var(--mixamt)),var(--mix))}
+.chip[aria-pressed="true"]{background:color-mix(in srgb,var(--g) 18%,var(--surface));border-color:color-mix(in srgb,var(--g) calc(100% - var(--mixamt)),var(--mix))}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{font:inherit;font-weight:700;border:0;background:transparent;color:var(--muted);padding:8px 16px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.count{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.95rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px 24px;min-height:300px;
+  display:grid;align-content:center;gap:18px;text-align:center;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0 0 auto;height:6px;background:color-mix(in srgb,var(--g) calc(100% - var(--mixamt)),var(--mix))}
+.glabel{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.inf{font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,9vw,3.8rem);line-height:1;overflow-wrap:anywhere}
+.forms{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form{border:1px dashed var(--line);border-radius:12px;padding:12px;min-width:0}
+.form small{display:block;color:var(--muted);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.form b{font-family:var(--display);font-size:1.5rem;font-weight:600;overflow-wrap:anywhere}
+.hidden-ans b{filter:blur(9px);user-select:none}
+.ist{font-size:.85rem;color:var(--muted);font-weight:700;margin-right:4px}
+.q{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left}
+.q label{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.q input{width:100%;font:inherit;font-size:1.2rem;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);margin-top:4px}
+.q input.ok{border-color:var(--ok)} .q input.bad{border-color:var(--bad)}
+.fb{min-height:1.5em;font-weight:700}
+.fb .ok{color:var(--ok)} .fb .bad{color:var(--bad)}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn{font:inherit;font-weight:700;padding:11px 20px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+button:focus-visible,input:focus-visible{outline:3px solid color-mix(in srgb,var(--g,#3949AB) 70%,var(--fg));outline-offset:2px}
+.score{color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.tip{color:var(--muted);font-size:.85rem;text-align:center;margin:0}
+#tableView{display:grid;gap:22px}
+.speak{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.tg tbody tr{cursor:pointer}
+.tg tbody tr:active td{background:color-mix(in srgb,var(--g) 20%,var(--surface))}
+.thint{color:var(--muted);margin:0;text-align:center}
+.tg h2{font-family:var(--display);font-size:1.2rem;margin:0 0 8px}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tg table{width:100%;border-collapse:collapse;font-size:1rem}
+.tg th{text-align:left;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:color-mix(in srgb,var(--g) 85%,#000);padding:8px 12px}
+.tg td{padding:7px 12px;border-top:1px solid var(--line);color:color-mix(in srgb,var(--g) calc(100% - var(--mixamt)),var(--mix))}
+.tg tr:nth-child(even) td{background:color-mix(in srgb,var(--g) 6%,var(--surface))}
+@media (max-width:480px){.forms,.q{grid-template-columns:1fr}.card{padding:24px 16px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Unregelmäßige Verben</h1>
+    <p class="sub">144 Verben in 12 Lautgruppen. Wähle Gruppen, dann lernen, testen oder als Tabelle ansehen.</p>
+  </header>
+
+  <div class="chips" id="chips" aria-label="Gruppen auswählen"></div>
+
+  <div class="bar">
+    <div class="seg" role="group" aria-label="Modus">
+      <button id="mLearn" aria-pressed="true">Karteikarten</button>
+      <button id="mQuiz" aria-pressed="false">Quiz</button>
+      <button id="mTable" aria-pressed="false">Tabelle</button>
+    </div>
+    <span class="count" id="count"></span>
+  </div>
+
+  <section class="card" id="card" aria-live="polite">
+    <div class="glabel c" id="glabel"></div>
+    <div class="inf" id="inf"></div>
+    <div class="speak" id="speakBar"><button class="btn" id="say" type="button">🔊 Anhören</button><button class="btn" id="slow" type="button" aria-pressed="false">🐢 Langsam</button></div>
+    <div id="learnBox" class="forms hidden-ans">
+      <div class="form"><small>Präteritum</small><b class="c" id="prae"></b></div>
+      <div class="form"><small>Partizip II</small><b class="c" id="part"></b></div>
+    </div>
+    <form id="quizBox" class="q" hidden autocomplete="off">
+      <div><label for="inPrae">Präteritum</label><input id="inPrae" autocapitalize="off" spellcheck="false"></div>
+      <div><label for="inPart">Partizip II</label><input id="inPart" autocapitalize="off" spellcheck="false"></div>
+      <div class="fb" id="fb" style="grid-column:1/-1"></div>
+    </form>
+  </section>
+
+  <section id="tableView" hidden></section>
+
+  <div class="ctrl" id="ctrlBar">
+    <button class="btn" id="prev">← Zurück</button>
+    <button class="btn primary" id="main">Lösung zeigen</button>
+    <button class="btn" id="next">Weiter →</button>
+    <button class="btn" id="shuffle">Mischen</button>
+  </div>
+  <div class="score" id="score" hidden></div>
+  <p class="tip">Tastatur: Leertaste = Lösung, Pfeiltasten = blättern. Im Quiz: Enter = prüfen / weiter.</p>
+</div>
+
+<script>
+const GROUPS = [{"name": "Gruppe 1: ei – ie – ie", "color": "#1F5FBF", "verbs": [["bleiben", "blieb", "geblieben", "ist"], ["schreiben", "schrieb", "geschrieben", ""], ["scheinen", "schien", "geschienen", ""], ["schweigen", "schwieg", "geschwiegen", ""], ["steigen", "stieg", "gestiegen", "ist"], ["treiben", "trieb", "getrieben", ""], ["reiben", "rieb", "gerieben", ""], ["leihen", "lieh", "geliehen", ""], ["verzeihen", "verzieh", "verziehen", ""], ["schreien", "schrie", "geschrien", ""], ["scheiden", "schied", "geschieden", ""], ["entscheiden", "entschied", "entschieden", ""], ["unterscheiden", "unterschied", "unterschieden", ""], ["vermeiden", "vermied", "vermieden", ""], ["überweisen", "überwies", "überwiesen", ""]]}, {"name": "Gruppe 2: ei – i – i (Doppelkonsonant)", "color": "#1E8E3E", "verbs": [["schneiden", "schnitt", "geschnitten", ""], ["leiden", "litt", "gelitten", ""], ["streiten", "stritt", "gestritten", ""], ["reiten", "ritt", "geritten", "ist"], ["greifen", "griff", "gegriffen", ""], ["pfeifen", "pfiff", "gepfiffen", ""], ["gleiten", "glitt", "geglitten", "ist"], ["schleichen", "schlich", "geschlichen", "ist"], ["streichen", "strich", "gestrichen", ""], ["weichen", "wich", "gewichen", "ist"], ["vergleichen", "verglich", "verglichen", ""], ["reißen", "riss", "gerissen", ""], ["beißen", "biss", "gebissen", ""], ["schmeißen", "schmiss", "geschmissen", ""]]}, {"name": "Gruppe 3: ie (ü, ö, au) – o – o", "color": "#B8860B", "verbs": [["fliegen", "flog", "geflogen", "ist"], ["fliehen", "floh", "geflohen", "ist"], ["ziehen", "zog", "gezogen", ""], ["verlieren", "verlor", "verloren", ""], ["frieren", "fror", "gefroren", ""], ["wiegen", "wog", "gewogen", ""], ["biegen", "bog", "gebogen", ""], ["abbiegen", "bog ab", "abgebogen", "ist"], ["schieben", "schob", "geschoben", ""], ["bieten", "bot", "geboten", ""], ["anbieten", "bot an", "angeboten", ""], ["verbieten", "verbot", "verboten", ""], ["riechen", "roch", "gerochen", ""], ["fließen", "floss", "geflossen", "ist"], ["genießen", "genoss", "genossen", ""], ["gießen", "goss", "gegossen", ""], ["schießen", "schoss", "geschossen", ""], ["schließen", "schloss", "geschlossen", ""], ["beschließen", "beschloss", "beschlossen", ""], ["lügen", "log", "gelogen", ""], ["betrügen", "betrog", "betrogen", ""], ["schwören", "schwor", "geschworen", ""], ["saufen", "soff", "gesoffen", ""], ["heben", "hob", "gehoben", ""], ["schmelzen", "schmolz", "geschmolzen", "ist"]]}, {"name": "Gruppe 4: i – a – u", "color": "#E8710A", "verbs": [["finden", "fand", "gefunden", ""], ["binden", "band", "gebunden", ""], ["verbinden", "verband", "verbunden", ""], ["empfinden", "empfand", "empfunden", ""], ["singen", "sang", "gesungen", ""], ["springen", "sprang", "gesprungen", "ist"], ["trinken", "trank", "getrunken", ""], ["sinken", "sank", "gesunken", "ist"], ["klingen", "klang", "geklungen", ""], ["zwingen", "zwang", "gezwungen", ""], ["gelingen", "gelang", "gelungen", "ist"]]}, {"name": "Gruppe 5: i – a – o", "color": "#8B5A2B", "verbs": [["beginnen", "begann", "begonnen", ""], ["gewinnen", "gewann", "gewonnen", ""], ["schwimmen", "schwamm", "geschwommen", "ist"], ["spinnen", "spann", "gesponnen", ""]]}, {"name": "Gruppe 6: e – a – o", "color": "#D32F2F", "verbs": [["helfen", "half", "geholfen", ""], ["sterben", "starb", "gestorben", "ist"], ["werfen", "warf", "geworfen", ""], ["werben", "warb", "geworben", ""], ["bewerben", "bewarb", "beworben", ""], ["verderben", "verdarb", "verdorben", ""], ["gelten", "galt", "gegolten", ""], ["sprechen", "sprach", "gesprochen", ""], ["brechen", "brach", "gebrochen", ""], ["stechen", "stach", "gestochen", ""], ["treffen", "traf", "getroffen", ""], ["nehmen", "nahm", "genommen", ""], ["stehlen", "stahl", "gestohlen", ""], ["befehlen", "befahl", "befohlen", ""], ["empfehlen", "empfahl", "empfohlen", ""], ["gebären", "gebar", "geboren", ""], ["erschrecken", "erschrak", "erschrocken", "ist"]]}, {"name": "Gruppe 7: e (i, ie) – a – e", "color": "#7B1FA2", "verbs": [["geben", "gab", "gegeben", ""], ["sehen", "sah", "gesehen", ""], ["lesen", "las", "gelesen", ""], ["essen", "aß", "gegessen", ""], ["fressen", "fraß", "gefressen", ""], ["messen", "maß", "gemessen", ""], ["vergessen", "vergaß", "vergessen", ""], ["treten", "trat", "getreten", ""], ["geschehen", "geschah", "geschehen", "ist"], ["bitten", "bat", "gebeten", ""], ["sitzen", "saß", "gesessen", ""], ["liegen", "lag", "gelegen", ""]]}, {"name": "Gruppe 8: A – ie/i – A", "color": "#607D8B", "verbs": [["fallen", "fiel", "gefallen", "ist"], ["gefallen", "gefiel", "gefallen", ""], ["halten", "hielt", "gehalten", ""], ["erhalten", "erhielt", "erhalten", ""], ["lassen", "ließ", "gelassen", ""], ["schlafen", "schlief", "geschlafen", ""], ["raten", "riet", "geraten", ""], ["braten", "briet", "gebraten", ""], ["blasen", "blies", "geblasen", ""], ["fangen", "fing", "gefangen", ""], ["anfangen", "fing an", "angefangen", ""], ["empfangen", "empfing", "empfangen", ""], ["hängen", "hing", "gehangen", ""], ["laufen", "lief", "gelaufen", "ist"], ["rufen", "rief", "gerufen", ""], ["stoßen", "stieß", "gestoßen", ""], ["heißen", "hieß", "geheißen", ""]]}, {"name": "Gruppe 9: a – u – a", "color": "#263238", "verbs": [["fahren", "fuhr", "gefahren", "ist"], ["tragen", "trug", "getragen", ""], ["schlagen", "schlug", "geschlagen", ""], ["graben", "grub", "gegraben", ""], ["laden", "lud", "geladen", ""], ["waschen", "wusch", "gewaschen", ""], ["wachsen", "wuchs", "gewachsen", "ist"], ["schaffen (erschaffen)", "schuf", "geschaffen", ""], ["backen", "backte (alt: buk)", "gebacken", ""]]}, {"name": "Gruppe 10: Mischverben (-te / -t)", "color": "#00897B", "verbs": [["kennen", "kannte", "gekannt", ""], ["nennen", "nannte", "genannt", ""], ["brennen", "brannte", "gebrannt", ""], ["senden", "sandte", "gesandt", ""], ["wenden", "wandte", "gewandt", ""], ["denken", "dachte", "gedacht", ""], ["bringen", "brachte", "gebracht", ""], ["wissen", "wusste", "gewusst", ""]]}, {"name": "Gruppe 11: Modalverben", "color": "#3949AB", "verbs": [["müssen", "musste", "gemusst", ""], ["können", "konnte", "gekonnt", ""], ["dürfen", "durfte", "gedurft", ""], ["wollen", "wollte", "gewollt", ""], ["mögen", "mochte", "gemocht", ""]]}, {"name": "Gruppe 12: Sonderfälle", "color": "#C2185B", "verbs": [["sein", "war", "gewesen", "ist"], ["haben", "hatte", "gehabt", ""], ["werden", "wurde", "geworden", "ist"], ["tun", "tat", "getan", ""], ["gehen", "ging", "gegangen", "ist"], ["stehen", "stand", "gestanden", ""], ["kommen", "kam", "gekommen", "ist"]]}];
+const all = [];
+GROUPS.forEach((g,gi)=>g.verbs.forEach(v=>all.push({gi,inf:v[0],prae:v[1],part:v[2],ist:!!v[3]})));
+let active = new Set(GROUPS.map((_,i)=>i)), deck=[], idx=0, mode="learn", shown=false, checked=false, right=0, tried=0;
+const $=id=>document.getElementById(id);
+try{const s=JSON.parse(localStorage.getItem("vk-groups")); if(Array.isArray(s)&&s.length) active=new Set(s);}catch(e){}
+
+function short(name){return name.replace(/^Gruppe (\d+): /,"$1 · ")}
+GROUPS.forEach((g,i)=>{
+  const b=document.createElement("button"); b.className="chip"; b.style.setProperty("--g",g.color);
+  b.innerHTML="<span>●</span> "+short(g.name); b.setAttribute("aria-pressed",active.has(i));
+  b.onclick=()=>{ if(active.has(i)){ if(active.size>1) active.delete(i);} else active.add(i);
+    b.setAttribute("aria-pressed",active.has(i)); try{localStorage.setItem("vk-groups",JSON.stringify([...active]))}catch(e){} build(false); };
+  $("chips").appendChild(b);
+});
+function build(shuffle){
+  deck=all.filter(v=>active.has(v.gi));
+  if(shuffle) for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+  idx=0; right=0; tried=0; render();
+}
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g," ").replace(/ß/g,"ss")}
+function accept(input,answer){
+  const a=norm(input); if(!a) return false;
+  const opts=answer.split(/[()]/).map(x=>x.replace(/alt:/,"").trim()).filter(Boolean).map(norm);
+  return opts.includes(a) || norm(answer)===a;
+}
+const synth=window.speechSynthesis; let voice=null, slow=false;
+function pickVoice(){ if(!synth) return; const vs=synth.getVoices().filter(v=>/^de/i.test(v.lang));
+  const pref=[/premium|enhanced|neural|natural|online/i,/google/i,/anna|helena|petra|katja|markus|yannick|hedda|conrad|amala|seraphina/i];
+  for(const p of pref){const f=vs.find(v=>p.test(v.name)); if(f){voice=f;return;}}
+  voice=vs.find(v=>v.lang.replace("_","-")==="de-DE")||vs[0]||null; }
+if(synth){ pickVoice(); try{synth.addEventListener("voiceschanged",pickVoice);}catch(e){synth.onvoiceschanged=pickVoice;} }
+function clean(s){return s.replace(/\(.*?\)/g,"").trim()}
+function phrase(v){return `${clean(v.inf)}. ${clean(v.prae)}. ${v.ist?"ist":"hat"} ${clean(v.part)}.`}
+function speak(text){ if(!synth) return; try{ synth.cancel(); const u=new SpeechSynthesisUtterance(text);
+  u.lang="de-DE"; if(voice) u.voice=voice; u.rate=slow?0.6:0.85; synth.speak(u);}catch(e){} }
+function drawTable(){
+  const t=$("tableView"); t.innerHTML=synth?'<p class="thint">🔊 Tippe auf eine Zeile, um sie anzuhören.</p>':"";
+  GROUPS.forEach((g,gi)=>{ if(!active.has(gi)) return;
+    const s=document.createElement("div"); s.className="tg"; s.style.setProperty("--g",g.color);
+    s.innerHTML=`<h2 class="c">${g.name}</h2><div class="tscroll"><table><thead><tr><th>Infinitiv</th><th>Präteritum</th><th>Partizip II</th></tr></thead><tbody>`+g.verbs.map((v,vi)=>`<tr data-g="${gi}" data-v="${vi}"><td><b>${v[0]}</b></td><td>${v[1]}</td><td>${v[3]?'<span class="ist">ist</span>':''}${v[2]}</td></tr>`).join("")+`</tbody></table></div>`;
+    t.appendChild(s); });
+}
+function render(){
+  if(mode==="table"){drawTable();return;}
+  const v=deck[idx], g=GROUPS[v.gi];
+  $("card").style.setProperty("--g",g.color);
+  $("glabel").textContent=g.name;
+  $("inf").textContent=v.inf;
+  $("prae").textContent=v.prae;
+  $("part").innerHTML=(v.ist?'<span class="ist">ist</span>':'')+v.part;
+  $("count").textContent=(idx+1)+" / "+deck.length;
+  shown=false; checked=false;
+  $("learnBox").classList.add("hidden-ans");
+  $("learnBox").hidden = mode!=="learn";
+  $("quizBox").hidden = mode!=="quiz";
+  $("main").textContent = mode==="learn" ? "Lösung zeigen" : "Prüfen";
+  ["inPrae","inPart"].forEach(id=>{$(id).value="";$(id).className="";});
+  $("fb").innerHTML="";
+  $("score").hidden = mode!=="quiz";
+  $("score").textContent = tried ? `Richtig: ${right} von ${tried}` : "Noch nichts geprüft";
+  if(mode==="quiz") $("inPrae").focus({preventScroll:true});
+}
+function main(){
+  if(mode==="learn"){ shown=!shown; $("learnBox").classList.toggle("hidden-ans",!shown); $("main").textContent=shown?"Verbergen":"Lösung zeigen"; return; }
+  if(checked){ go(1); return; }
+  const v=deck[idx], a=accept($("inPrae").value,v.prae), b=accept($("inPart").value,v.part);
+  $("inPrae").className=a?"ok":"bad"; $("inPart").className=b?"ok":"bad";
+  tried++; if(a&&b) right++;
+  $("fb").innerHTML = a&&b ? '<span class="ok">Richtig!</span>'
+    : `<span class="bad">Lösung:</span> ${v.inf} – ${v.prae} – ${v.ist?"ist ":"hat "}${v.part}`;
+  $("score").textContent=`Richtig: ${right} von ${tried}`;
+  checked=true; $("main").textContent="Weiter";
+}
+function go(d){ idx=(idx+d+deck.length)%deck.length; const r=right,t=tried; render(); right=r; tried=t;
+  $("score").textContent = tried ? `Richtig: ${right} von ${tried}` : "Noch nichts geprüft"; }
+$("main").onclick=main; $("next").onclick=()=>go(1); $("prev").onclick=()=>go(-1); $("shuffle").onclick=()=>build(true);
+$("quizBox").addEventListener("submit",e=>{e.preventDefault();main();});
+function setMode(m){mode=m;
+  $("mLearn").setAttribute("aria-pressed",m==="learn");$("mQuiz").setAttribute("aria-pressed",m==="quiz");$("mTable").setAttribute("aria-pressed",m==="table");
+  const tbl=m==="table"; $("card").hidden=tbl; $("ctrlBar").hidden=tbl; $("tableView").hidden=!tbl; $("count").hidden=tbl; document.querySelector(".tip").hidden=tbl;
+  if(tbl){$("score").hidden=true; drawTable();} else build(m==="quiz");}
+$("mLearn").onclick=()=>setMode("learn"); $("mQuiz").onclick=()=>setMode("quiz"); $("mTable").onclick=()=>setMode("table");
+if(!synth) $("speakBar").hidden=true;
+$("say").onclick=()=>{ const v=deck[idx]; speak(mode==="quiz"&&!checked ? clean(v.inf) : phrase(v)); };
+$("slow").onclick=()=>{ slow=!slow; $("slow").setAttribute("aria-pressed",slow); };
+$("tableView").addEventListener("click",e=>{ const tr=e.target.closest("tr[data-g]"); if(!tr) return;
+  const v=GROUPS[+tr.dataset.g].verbs[+tr.dataset.v]; speak(phrase({inf:v[0],prae:v[1],part:v[2],ist:!!v[3]})); });
+document.addEventListener("keydown",e=>{
+  if(mode==="table") return;
+  if(e.target.tagName==="INPUT") return;
+  if(e.key===" "){e.preventDefault();main();} else if(e.key==="ArrowRight") go(1); else if(e.key==="ArrowLeft") go(-1);
+});
+build(false);
+</script>
+
+</body></html>
