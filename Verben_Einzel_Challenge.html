@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Verben-Sprint – Einzel-Challenge</title>
+<style>
+  :root{
+    --bg:#0f172a;
+    --panel:#1e293b;
+    --accent:#f59e0b;
+    --accentB:#38bdf8;
+    --good:#22c55e;
+    --bad:#ef4444;
+    --text:#f1f5f9;
+    --muted:#94a3b8;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;padding:0;
+    min-height:100%;
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    -webkit-text-size-adjust:100%;
+    text-size-adjust:100%;
+  }
+  button{touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+  input{font-size:16px;}
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:24px 32px 60px;
+    padding-top:calc(24px + env(safe-area-inset-top));
+    padding-bottom:calc(60px + env(safe-area-inset-bottom));
+    padding-left:calc(32px + env(safe-area-inset-left));
+    padding-right:calc(32px + env(safe-area-inset-right));
+  }
+  h1{
+    text-align:center;
+    font-size:2.4rem;
+    margin:8px 0 4px;
+  }
+  .sub{
+    text-align:center;
+    color:var(--muted);
+    margin-bottom:26px;
+    font-size:1.1rem;
+  }
+
+  /* --- Player setup bar --- */
+  .setup{
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    align-items:center;
+    margin-bottom:26px;
+    flex-wrap:wrap;
+  }
+  .setup input{
+    background:var(--panel);
+    border:2px solid rgba(255,255,255,.15);
+    color:var(--text);
+    font-size:1.2rem;
+    padding:12px 18px;
+    border-radius:12px;
+    width:260px;
+    text-align:center;
+  }
+  .setup input:focus{outline:none;border-color:var(--accent);}
+  .setup button{
+    font-size:1.15rem;
+    padding:14px 28px;
+    border-radius:12px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    background:var(--good);
+    color:#052e16;
+  }
+  .setup button:disabled{background:#334155;color:var(--muted);cursor:not-allowed;}
+
+  /* --- Status row: active player, streak, lives --- */
+  .status-row{
+    display:flex;
+    justify-content:center;
+    gap:28px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+  }
+  .status-box{
+    background:var(--panel);
+    border-radius:14px;
+    padding:14px 26px;
+    text-align:center;
+    min-width:160px;
+  }
+  .status-box .lbl{color:var(--muted);font-size:.9rem;text-transform:uppercase;letter-spacing:1px;}
+  .status-box .val{font-size:2rem;font-weight:800;margin-top:4px;}
+  #playerNameDisplay{color:var(--accent);}
+  #streakDisplay{color:var(--accentB);}
+  .hearts{font-size:1.8rem;letter-spacing:4px;margin-top:4px;}
+
+  .progress-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin-bottom:18px;
+    color:var(--muted);
+    font-size:1.0rem;
+  }
+  .progress-bar{
+    width:280px;
+    height:8px;
+    background:rgba(255,255,255,.1);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--accent),var(--accentB));
+    width:0%;
+    transition:width .3s ease;
+  }
+
+  .card{
+    background:var(--panel);
+    border-radius:24px;
+    padding:50px 40px;
+    text-align:center;
+    box-shadow:0 10px 40px rgba(0,0,0,.4);
+    margin-bottom:26px;
+  }
+  .label{
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:.95rem;
+    margin-bottom:10px;
+  }
+  .verb{
+    font-size:5rem;
+    font-weight:800;
+    color:var(--text);
+    min-height:1.2em;
+    word-break:break-word;
+  }
+  .answer{
+    margin-top:28px;
+    padding-top:24px;
+    border-top:2px dashed rgba(255,255,255,.15);
+    display:none;
+  }
+  .answer.show{display:block;}
+  .answer-row{
+    display:flex;
+    justify-content:center;
+    gap:60px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .answer-item .label2{color:var(--muted);font-size:.95rem;margin-bottom:6px;}
+  .answer-item .val{font-size:2.6rem;font-weight:700;color:var(--accent);}
+  .answer-item.p2 .val{color:var(--accentB);}
+
+  .controls{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:26px;
+  }
+  button.main-btn{
+    font-size:1.2rem;
+    padding:16px 34px;
+    border-radius:14px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    transition:transform .1s ease;
+  }
+  button.main-btn:active{transform:scale(.96);}
+  button.main-btn:disabled{background:#334155 !important;color:var(--muted) !important;cursor:not-allowed;}
+  .btn-reveal{background:var(--accent);color:#3a2400;}
+  .btn-correct{background:var(--good);color:#052e16;}
+  .btn-wrong{background:var(--bad);color:#3a0505;}
+  .btn-reset{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,.25) !important;}
+
+  .timer{text-align:center;margin:6px 0 10px;}
+  .timer .time{font-size:1.8rem;font-weight:800;color:var(--muted);}
+  .timer.warn .time{color:var(--bad);}
+  .timerbar{
+    width:100%;max-width:460px;height:8px;
+    background:rgba(255,255,255,.1);border-radius:6px;
+    margin:8px auto 0;overflow:hidden;
+  }
+  .timerbar-fill{height:100%;background:var(--good);width:100%;transition:width 1s linear, background .3s ease;}
+
+  /* --- Turn over banner --- */
+  .turnover{
+    display:none;
+    background:linear-gradient(135deg,#7f1d1d,#450a0a);
+    border-radius:20px;
+    padding:34px;
+    text-align:center;
+    margin-bottom:26px;
+  }
+  .turnover.show{display:block;}
+  .turnover h2{margin:0 0 10px;font-size:1.8rem;}
+  .turnover .finalscore{font-size:2.6rem;font-weight:800;color:var(--accent);}
+
+  /* --- Leaderboard --- */
+  .leaderboard{
+    background:var(--panel);
+    border-radius:20px;
+    padding:24px 30px;
+  }
+  .leaderboard h2{margin-top:0;text-align:center;font-size:1.5rem;}
+  table{width:100%;border-collapse:collapse;font-size:1.15rem;}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);}
+  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:.85rem;letter-spacing:1px;}
+  td.rank{width:50px;font-weight:800;color:var(--accent);}
+  td.score{font-weight:800;color:var(--accentB);text-align:right;}
+  .empty-row td{color:var(--muted);text-align:center;padding:20px;}
+  .lb-clear{
+    display:block;
+    margin:16px auto 0;
+    background:transparent;
+    border:1px solid rgba(255,255,255,.25);
+    color:var(--muted);
+    padding:8px 18px;
+    border-radius:10px;
+    cursor:pointer;
+  }
+
+  footer{text-align:center;color:var(--muted);font-size:.9rem;margin-top:30px;}
+
+  @media (max-width:700px){
+    .verb{font-size:3rem;}
+    .answer-item .val{font-size:1.8rem;}
+  }
+
+  @media (max-width:480px){
+    .wrap{padding-left:calc(14px + env(safe-area-inset-left));padding-right:calc(14px + env(safe-area-inset-right));}
+    h1{font-size:1.5rem;}
+    .sub{font-size:.9rem;}
+    .setup{gap:10px;}
+    .setup input{width:100%;font-size:16px;padding:12px 14px;}
+    .setup button{width:100%;font-size:1rem;padding:14px 18px;}
+    .status-row{gap:12px;}
+    .status-box{min-width:0;flex:1 1 90px;padding:10px 12px;}
+    .status-box .val{font-size:1.4rem;}
+    .hearts{font-size:1.3rem;}
+    .card{padding:26px 16px;border-radius:18px;}
+    .verb{font-size:2rem;}
+    .answer-row{gap:20px;}
+    .answer-item .val{font-size:1.3rem;}
+    .progress-bar{width:160px;}
+    button.main-btn{font-size:1rem;padding:14px 18px;width:100%;}
+    .controls{gap:10px;}
+    table{font-size:.95rem;}
+    th,td{padding:8px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏃 Verben-Sprint – Einzel-Challenge</h1>
+  <div class="sub">Eine Person tritt an, der Rest schaut zu und feuert an. 3 Leben, so viele richtige Verben wie möglich.</div>
+
+  <div class="setup" id="setupBar">
+    <input type="text" id="playerInput" placeholder="Name der Spielerin / des Spielers" onkeydown="if(event.key==='Enter')startTurn();">
+    <button id="startBtn" onclick="startTurn()">▶ Challenge starten</button>
+  </div>
+
+  <div class="status-row" id="statusRow" style="display:none;">
+    <div class="status-box">
+      <div class="lbl">Spieler/in</div>
+      <div class="val" id="playerNameDisplay">–</div>
+    </div>
+    <div class="status-box">
+      <div class="lbl">Punkte</div>
+      <div class="val" id="streakDisplay">0</div>
+    </div>
+    <div class="status-box">
+      <div class="lbl">Leben</div>
+      <div class="val hearts" id="livesDisplay">❤️❤️❤️</div>
+    </div>
+  </div>
+
+  <div class="progress-row" id="progressRow" style="display:none;">
+    <span id="progressLabel">Verb 0 von 144 gesehen</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="card" id="gameCard" style="display:none;">
+    <div class="label">Infinitiv</div>
+    <div class="verb" id="verbDisplay">–</div>
+
+    <div class="timer" id="timerBox">
+      <div class="time" id="timeLeft">10</div>
+      <div class="timerbar"><div class="timerbar-fill" id="timerFill"></div></div>
+    </div>
+
+    <div class="answer" id="answerBox">
+      <div class="answer-row">
+        <div class="answer-item">
+          <div class="label2">Präteritum (3. Pers. Sg.)</div>
+          <div class="val" id="pratVal">–</div>
+        </div>
+        <div class="answer-item p2">
+          <div class="label2">Partizip II + Hilfsverb</div>
+          <div class="val" id="partVal">–</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls" id="controlsRow" style="display:none;">
+    <button class="main-btn btn-reveal" onclick="revealAnswer()" id="revealBtn">👁 Lösung zeigen</button>
+    <button class="main-btn btn-correct" onclick="markResult(true)" id="correctBtn" disabled>✔ Richtig</button>
+    <button class="main-btn btn-wrong" onclick="markResult(false)" id="wrongBtn" disabled>✕ Falsch</button>
+  </div>
+
+  <div class="turnover" id="turnoverBox">
+    <h2 id="turnoverName">Runde beendet!</h2>
+    <div>Erreichte Punkte:</div>
+    <div class="finalscore" id="turnoverScore">0</div>
+  </div>
+
+  <div class="controls">
+    <button class="main-btn btn-reset" onclick="resetAll()">↺ Alles zurücksetzen</button>
+  </div>
+
+  <div class="leaderboard">
+    <h2>🏆 Bestenliste</h2>
+    <table>
+      <thead><tr><th>#</th><th>Name</th><th style="text-align:right;">Punkte</th></tr></thead>
+      <tbody id="leaderboardBody">
+        <tr class="empty-row"><td colspan="3">Noch keine Runde gespielt.</td></tr>
+      </tbody>
+    </table>
+    <button class="lb-clear" onclick="clearLeaderboard()">Bestenliste leeren</button>
+  </div>
+
+  <footer>144 unregelmäßige Verben · jede Person spielt einzeln, die Klasse verfolgt gemeinsam am Beamer</footer>
+</div>
+
+<script>
+const verbs = [
+["abbiegen","bog ab","ist abgebogen"],
+["anbieten","bot an","hat angeboten"],
+["anfangen","fing an","hat angefangen"],
+["backen","buk/backte","hat gebacken"],
+["befehlen","befahl","hat befohlen"],
+["beginnen","begann","hat begonnen"],
+["beißen","biss","hat gebissen"],
+["beschließen","beschloss","hat beschlossen"],
+["betrügen","betrog","hat betrogen"],
+["bewerben","bewarb","hat beworben"],
+["biegen","bog","hat gebogen"],
+["bieten","bot","hat geboten"],
+["binden","band","hat gebunden"],
+["bitten","bat","hat gebeten"],
+["blasen","blies","hat geblasen"],
+["bleiben","blieb","ist geblieben"],
+["braten","briet","hat gebraten"],
+["brechen","brach","hat gebrochen"],
+["brennen","brannte","hat gebrannt"],
+["bringen","brachte","hat gebracht"],
+["denken","dachte","hat gedacht"],
+["dürfen","durfte","hat gedurft"],
+["empfangen","empfing","hat empfangen"],
+["empfehlen","empfahl","hat empfohlen"],
+["empfinden","empfand","hat empfunden"],
+["entscheiden","entschied","hat entschieden"],
+["erhalten","erhielt","hat erhalten"],
+["erschrecken","erschrak","ist erschrocken"],
+["essen","aß","hat gegessen"],
+["fahren","fuhr","ist gefahren"],
+["fallen","fiel","ist gefallen"],
+["fangen","fing","hat gefangen"],
+["finden","fand","hat gefunden"],
+["fliegen","flog","ist geflogen"],
+["fliehen","floh","ist geflohen"],
+["fließen","floss","ist geflossen"],
+["fressen","fraß","hat gefressen"],
+["frieren","fror","hat gefroren"],
+["gebären","gebar","hat geboren"],
+["geben","gab","hat gegeben"],
+["gefallen","gefiel","hat gefallen"],
+["gehen","ging","ist gegangen"],
+["gelingen","gelang","ist gelungen"],
+["gelten","galt","hat gegolten"],
+["genießen","genoss","hat genossen"],
+["geschehen","geschah","ist geschehen"],
+["gewinnen","gewann","hat gewonnen"],
+["gießen","goss","hat gegossen"],
+["gleiten","glitt","ist geglitten"],
+["graben","grub","hat gegraben"],
+["greifen","griff","hat gegriffen"],
+["haben","hatte","hat gehabt"],
+["halten","hielt","hat gehalten"],
+["hängen","hing","hat gehangen"],
+["heben","hob","hat gehoben"],
+["heißen","hieß","hat geheißen"],
+["helfen","half","hat geholfen"],
+["kennen","kannte","hat gekannt"],
+["klingen","klang","hat geklungen"],
+["kommen","kam","ist gekommen"],
+["können","konnte","hat gekonnt"],
+["laden","lud","hat geladen"],
+["lassen","ließ","hat gelassen"],
+["laufen","lief","ist gelaufen"],
+["leiden","litt","hat gelitten"],
+["leihen","lieh","hat geliehen"],
+["lesen","las","hat gelesen"],
+["liegen","lag","hat gelegen"],
+["lügen","log","hat gelogen"],
+["messen","maß","hat gemessen"],
+["mögen","mochte","hat gemocht"],
+["müssen","musste","hat gemusst"],
+["nehmen","nahm","hat genommen"],
+["nennen","nannte","hat genannt"],
+["pfeifen","pfiff","hat gepfiffen"],
+["raten","riet","hat geraten"],
+["reiben","rieb","hat gerieben"],
+["reißen","riss","hat gerissen"],
+["reiten","ritt","ist geritten"],
+["riechen","roch","hat gerochen"],
+["rufen","rief","hat gerufen"],
+["saufen","soff","hat gesoffen"],
+["schaffen","schuf","hat geschaffen"],
+["scheiden","schied","hat geschieden"],
+["scheinen","schien","hat geschienen"],
+["schieben","schob","hat geschoben"],
+["schießen","schoss","hat geschossen"],
+["schlafen","schlief","hat geschlafen"],
+["schlagen","schlug","hat geschlagen"],
+["schleichen","schlich","ist geschlichen"],
+["schließen","schloss","hat geschlossen"],
+["schmeißen","schmiss","hat geschmissen"],
+["schmelzen","schmolz","hat/ist geschmolzen"],
+["schneiden","schnitt","hat geschnitten"],
+["schreiben","schrieb","hat geschrieben"],
+["schreien","schrie","hat geschrien"],
+["schweigen","schwieg","hat geschwiegen"],
+["schwimmen","schwamm","ist geschwommen"],
+["schwören","schwor","hat geschworen"],
+["sehen","sah","hat gesehen"],
+["sein","war","ist gewesen"],
+["senden","sandte","hat gesandt"],
+["singen","sang","hat gesungen"],
+["sinken","sank","ist gesunken"],
+["sitzen","saß","hat gesessen"],
+["spinnen","spann","hat gesponnen"],
+["sprechen","sprach","hat gesprochen"],
+["springen","sprang","ist gesprungen"],
+["stechen","stach","hat gestochen"],
+["stehen","stand","hat gestanden"],
+["stehlen","stahl","hat gestohlen"],
+["steigen","stieg","ist gestiegen"],
+["sterben","starb","ist gestorben"],
+["stoßen","stieß","hat gestoßen"],
+["streichen","strich","hat gestrichen"],
+["streiten","stritt","hat gestritten"],
+["tragen","trug","hat getragen"],
+["treffen","traf","hat getroffen"],
+["treiben","trieb","hat getrieben"],
+["treten","trat","ist getreten"],
+["trinken","trank","hat getrunken"],
+["tun","tat","hat getan"],
+["überweisen","überwies","hat überwiesen"],
+["unterscheiden","unterschied","hat unterschieden"],
+["verbieten","verbot","hat verboten"],
+["verbinden","verband","hat verbunden"],
+["verderben","verdarb","hat verdorben"],
+["vergessen","vergaß","hat vergessen"],
+["vergleichen","verglich","hat verglichen"],
+["verlieren","verlor","hat verloren"],
+["vermeiden","vermied","hat vermieden"],
+["verzeihen","verzieh","hat verziehen"],
+["wachsen","wuchs","ist gewachsen"],
+["waschen","wusch","hat gewaschen"],
+["weichen","wich","ist gewichen"],
+["wenden","wandte","hat gewandt"],
+["werben","warb","hat geworben"],
+["werden","wurde","ist geworden"],
+["werfen","warf","hat geworfen"],
+["wiegen","wog","hat gewogen"],
+["wissen","wusste","hat gewusst"],
+["wollen","wollte","hat gewollt"],
+["ziehen","zog","hat gezogen"],
+["zwingen","zwang","hat gezwungen"]
+];
+
+const MAX_LIVES = 3;
+const TIMER_START = 10;
+
+let deck = [];
+let current = null;
+let playerName = '';
+let score = 0;
+let lives = MAX_LIVES;
+let seen = 0;
+let timerInterval = null;
+let timeLeft = TIMER_START;
+let leaderboard = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function newDeck(){ deck = shuffle(verbs); }
+
+function updateHearts(){
+  document.getElementById('livesDisplay').textContent = '❤️'.repeat(lives) + '🖤'.repeat(MAX_LIVES-lives);
+}
+
+function updateProgress(){
+  document.getElementById('progressLabel').textContent = `Verb ${seen} von ${verbs.length} gesehen`;
+  document.getElementById('progressFill').style.width = `${(seen/verbs.length)*100}%`;
+}
+
+function startTurn(){
+  const nameInput = document.getElementById('playerInput');
+  playerName = nameInput.value.trim() || 'Unbenannt';
+  score = 0;
+  lives = MAX_LIVES;
+  seen = 0;
+  newDeck();
+
+  document.getElementById('setupBar').style.display = 'none';
+  document.getElementById('statusRow').style.display = 'flex';
+  document.getElementById('progressRow').style.display = 'flex';
+  document.getElementById('gameCard').style.display = 'block';
+  document.getElementById('controlsRow').style.display = 'flex';
+  document.getElementById('turnoverBox').classList.remove('show');
+
+  document.getElementById('playerNameDisplay').textContent = playerName;
+  document.getElementById('streakDisplay').textContent = score;
+  updateHearts();
+  updateProgress();
+
+  nextVerb();
+}
+
+function nextVerb(){
+  stopTimer();
+  if(deck.length === 0) newDeck();
+  current = deck.pop();
+  seen++;
+  document.getElementById('verbDisplay').textContent = current[0];
+  document.getElementById('answerBox').classList.remove('show');
+  document.getElementById('pratVal').textContent = '–';
+  document.getElementById('partVal').textContent = '–';
+  document.getElementById('correctBtn').disabled = true;
+  document.getElementById('wrongBtn').disabled = true;
+  document.getElementById('revealBtn').disabled = false;
+  updateProgress();
+  startTimer();
+}
+
+function revealAnswer(){
+  if(!current) return;
+  document.getElementById('pratVal').textContent = current[1];
+  document.getElementById('partVal').textContent = current[2];
+  document.getElementById('answerBox').classList.add('show');
+  document.getElementById('correctBtn').disabled = false;
+  document.getElementById('wrongBtn').disabled = false;
+  document.getElementById('revealBtn').disabled = true;
+  stopTimer();
+}
+
+function markResult(isCorrect){
+  if(isCorrect){
+    score++;
+    document.getElementById('streakDisplay').textContent = score;
+    nextVerb();
+  } else {
+    lives--;
+    updateHearts();
+    if(lives <= 0){
+      endTurn();
+    } else {
+      nextVerb();
+    }
+  }
+}
+
+function endTurn(){
+  stopTimer();
+  document.getElementById('gameCard').style.display = 'none';
+  document.getElementById('controlsRow').style.display = 'none';
+  document.getElementById('statusRow').style.display = 'none';
+  document.getElementById('progressRow').style.display = 'none';
+
+  document.getElementById('turnoverName').textContent = `${playerName} – Runde beendet!`;
+  document.getElementById('turnoverScore').textContent = score;
+  document.getElementById('turnoverBox').classList.add('show');
+
+  leaderboard.push({name: playerName, score: score});
+  leaderboard.sort((a,b)=>b.score - a.score);
+  renderLeaderboard();
+
+  document.getElementById('setupBar').style.display = 'flex';
+  document.getElementById('playerInput').value = '';
+  document.getElementById('playerInput').focus();
+}
+
+function renderLeaderboard(){
+  const body = document.getElementById('leaderboardBody');
+  if(leaderboard.length === 0){
+    body.innerHTML = '<tr class="empty-row"><td colspan="3">Noch keine Runde gespielt.</td></tr>';
+    return;
+  }
+  body.innerHTML = leaderboard.map((entry,i)=>`
+    <tr>
+      <td class="rank">${i+1}</td>
+      <td>${escapeHtml(entry.name)}</td>
+      <td class="score">${entry.score}</td>
+    </tr>
+  `).join('');
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function clearLeaderboard(){
+  leaderboard = [];
+  renderLeaderboard();
+}
+
+function resetAll(){
+  stopTimer();
+  clearLeaderboard();
+  document.getElementById('turnoverBox').classList.remove('show');
+  document.getElementById('gameCard').style.display = 'none';
+  document.getElementById('controlsRow').style.display = 'none';
+  document.getElementById('statusRow').style.display = 'none';
+  document.getElementById('progressRow').style.display = 'none';
+  document.getElementById('setupBar').style.display = 'flex';
+  document.getElementById('playerInput').value = '';
+}
+
+function startTimer(){
+  stopTimer();
+  timeLeft = TIMER_START;
+  document.getElementById('timeLeft').textContent = timeLeft;
+  document.getElementById('timerFill').style.width = '100%';
+  document.getElementById('timerFill').style.background = 'var(--good)';
+  document.getElementById('timerBox').classList.remove('warn');
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    document.getElementById('timeLeft').textContent = Math.max(timeLeft,0);
+    const pct = Math.max(timeLeft,0)/TIMER_START*100;
+    document.getElementById('timerFill').style.width = pct + '%';
+    if(timeLeft <= 3){
+      document.getElementById('timerFill').style.background = 'var(--bad)';
+      document.getElementById('timerBox').classList.add('warn');
+    }
+    if(timeLeft <= 0){
+      stopTimer();
+      // Zeit abgelaufen: automatisch als Lösung anzeigen, Spieler kann dann bewertet werden
+      revealAnswer();
+    }
+  },1000);
+}
+
+function stopTimer(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+}
+
+renderLeaderboard();
+</script>
+</body>
+</html>
